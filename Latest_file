@@ -1,0 +1,145 @@
+install.packages("igraph")
+
+library(igraph)
+
+ 
+edge_list <- read.table("C:/Users/santd/OneDrive/Escritorio/ENSAE/Semestre 2/Statistical Analysis/Proyecto/Data/PolitiFactUserUser.txt", header=FALSE)
+head(edge_list, 5)
+
+
+# Read the list as the igraph format
+g <- graph.data.frame(edge_list, directed=TRUE)
+
+# Remove redundant edges and looping edges.
+g <- simplify(g, remove.multiple=T, remove.loops=T)
+
+
+
+# Plot the graph
+plot(g, vertex.label=NA, vertex.size=3, vertex.frame.color=NA, edge.width=0.5, edge.arrow.size=0.5, edge.arrow.width=0.5, vertex.color="lightblue", layout=layout_nicely)
+
+###################################
+########### New things#############
+###################################
+
+# To check the Edge sequence
+E(g)
+
+# To create the matrix of the network
+g[]
+
+#To check the attributes of the edges
+edge_attr(g)
+vertex_attr(g)
+
+# To check if our graph is simple, meaning absence of loops and multi-edges
+is.simple(g)
+
+# To check if the graph is weighted
+is.weighted(g)
+
+# To check if it is connected, meaning if every vertex is reachable from every other.
+is.connected(g)
+
+
+# To check if it is weakly connected, it means if its underlying graph
+#(i.e., the result of stripping away the labels `tail' and `head' from G) is
+#connected
+is.connected(g,mode="weak")
+
+
+# To check if it is strongly connected, It is called strongly connected 
+#if every vertex v is reachable from every u by a directed walk.
+is.connected(g,mode="strong")
+
+
+#To see the diameter of the graph, The value of the longest distance in a graph is called the diameter of the
+#graph.
+diameter(g)
+
+
+#To get the adjency matrix
+get.adjacency(g)
+
+#Plot grpah in a different way
+plot(g, vertex.label=NA, vertex.size=3, vertex.frame.color=NA, edge.width=0.5, edge.arrow.size=0.5, edge.arrow.width=0.5, vertex.color="lightblue", layout=layout.fruchterman.reingold)
+
+
+######### I don't see a particular use to the below part##################
+#--------------------------------------------------------------------------
+# Histogram of the degree is the number of vertices in V incident to v.
+hist(degree(g), col="lightblue",xlab="Vertex Degree",ylab="Frequency",main="")
+
+#Histrogram of the strenght
+hist(graph.strength(g), col="pink", xlab="Vertex Strength",ylab="Frequency",main="")
+#----------------------------------------------------------------------------
+install.packages("sna")
+install.packages("network")
+library(sna)
+library(network)
+
+A <- get.adjacency(g)
+
+#It doesn't run in my computer, problems of allocation size.
+ga <- as.network.matrix(A)
+#To do a graph of centrality, we need ga in order to run it
+gplot.target(g,degree(g),main="Degree",circ.lab = FALSE, circ.col="skyblue",usearrows = FALSE,ertex.col=c("blue",rep("red",32),"yellow"),edge.col="darkgray")
+
+
+###########################################
+####### Network and node descriptives######
+###########################################
+
+#To get the proportion of present edges from all possible edges in the network.
+edge_density(g, loops=F)
+
+#To get the proportion of reciprocated ties (for a directed network).
+reciprocity(g)
+dyad_census(g) # Mutual, asymmetric, and null node pairs
+
+
+# To get ratio of triangles (direction disregarded) to connected triples.
+transitivity(g, type="global") # net is treated as an undirected network
+
+#To get ratio of triangles to connected triples each vertex is part of.
+transitivity(g, type="local")
+
+
+#Node degree
+deg <- degree(g, mode="all")
+plot(g, vertex.size=deg*3)
+hist(deg, breaks=1:vcount(g)-1, main="Histogram of node degree")
+
+
+#Degree distribution
+deg.dist <- degree_distribution(g, cumulative=T, mode="all")
+plot( x=0:max(deg), y=1-deg.dist, pch=19, cex=1.2, col="orange",xlab="Degree", ylab="Cumulative Frequency")
+
+
+#centralization, and theoretical_max - maximum centralization score for a graph of that size.
+degree(g, mode="in")
+centr_degree(g, mode="in", normalized=T)
+
+
+
+#To get the mean of the shortest distance between each pair of nodes in the network (in both directions for directed graphs)
+mean_distance(g, directed=F)
+mean_distance(g, directed=T)
+
+#Community detection
+ceb <- cluster_edge_betweenness(g)
+plot(ceb, g)
+
+class(ceb)
+# number of communities
+length(ceb)
+
+# community membership for each node
+membership(ceb)
+
+#High modularity for a partitioning reflects dense connections within communities and sparse
+#connections across communities.
+modularity(ceb)
+
+## Matching of attributes across connected nodes more than expected by chance
+assortativity(net, V(net)$audience.size, directed=F)
